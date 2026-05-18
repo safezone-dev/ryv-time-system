@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  COLLABORATOR
+  EXECUTIVE
+}
+
+enum EntryStatus {
+  ACTIVE
+  FINISHED
+  APPROVED
+}
+
+model User {
+  id          String       @id @default(cuid())
+
+  name        String
+  email       String       @unique
+  password    String
+
+  role        Role         @default(COLLABORATOR)
+
+  active      Boolean      @default(true)
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now()) @updatedAt
+
+  // RELACIONES
+  timeEntries TimeEntry[]
+  assignments Assignment[]
+
+  // CLIENTES ASIGNADOS
+  clients     Client[]
+}
+
+model Client {
+  id            String       @id @default(cuid())
+
+  name          String
+  contact       String?
+  phone         String?
+  email         String?
+
+  advisor       String?
+  executive     String?
+
+  active        Boolean      @default(true)
+
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @default(now()) @updatedAt
+
+  // ASIGNACION DIRECTA
+  assignedToId  String?
+  assignedTo    User? @relation(fields: [assignedToId], references: [id])
+
+  // RELACIONES
+  timeEntries   TimeEntry[]
+  assignments   Assignment[]
+}
+
+model Assignment {
+  id          String    @id @default(cuid())
+
+  userId      String
+  clientId    String
+
+  user        User      @relation(fields: [userId], references: [id])
+  client      Client    @relation(fields: [clientId], references: [id])
+
+  createdAt   DateTime  @default(now())
+
+  @@unique([userId, clientId])
+}
+
+model TimeEntry {
+  id          String       @id @default(cuid())
+
+  userId      String
+  clientId    String
+
+  description String?
+
+  startTime   DateTime
+  endTime     DateTime?
+
+  duration    Int?
+
+  status      EntryStatus  @default(ACTIVE)
+
+  createdAt   DateTime     @default(now())
+
+  user        User         @relation(fields: [userId], references: [id])
+  client      Client       @relation(fields: [clientId], references: [id])
+}
+
+model ImportLog {
+  id            String    @id @default(cuid())
+
+  fileName      String
+  importedBy    String?
+
+  totalRows     Int       @default(0)
+  createdRows   Int       @default(0)
+  updatedRows   Int       @default(0)
+  skippedRows   Int       @default(0)
+
+  createdAt     DateTime  @default(now())
+}
