@@ -33,7 +33,6 @@ export default function DashboardLayout({
   const { data: session } =
     useSession();
 
-  // MENU DINÁMICO POR ROL
   const menu = [
     {
       name: "Dashboard",
@@ -47,7 +46,6 @@ export default function DashboardLayout({
       icon: Building2,
     },
 
-    // SOLO ADMIN
     ...(session?.user?.role ===
     "ADMIN"
       ? [
@@ -91,7 +89,7 @@ export default function DashboardLayout({
 
   return (
     <div className="h-screen bg-gray-100 flex overflow-hidden">
-      {/* MOBILE OVERLAY */}
+      {/* OVERLAY MOBILE */}
       {open && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -110,14 +108,14 @@ export default function DashboardLayout({
         }`}
       >
         {/* HEADER */}
-        <div className="flex items-center justify-between p-6 border-b border-green-600">
+        <div className="flex items-center justify-between p-5 border-b border-green-600">
           <div>
-            <h1 className="text-2xl font-bold">
+            <h1 className="text-xl font-bold tracking-tight">
               RYV CRM
             </h1>
 
-            <p className="text-sm opacity-80">
-              Control de tiempos
+            <p className="text-xs opacity-80 mt-1">
+              Sistema de control de tiempos
             </p>
           </div>
 
@@ -127,43 +125,41 @@ export default function DashboardLayout({
               setOpen(false)
             }
           >
-            <X size={26} />
+            <X size={22} />
           </button>
         </div>
 
         {/* USER */}
-        <div className="px-6 py-5 border-b border-green-600">
+        <div className="px-5 py-4 border-b border-green-600">
           <div className="flex items-center gap-3">
-            <div className="bg-white/20 rounded-full p-2">
+            <div className="bg-white/20 rounded-full p-2 shrink-0">
               <UserCircle2
-                size={40}
+                size={34}
               />
             </div>
 
-            <div className="overflow-hidden">
-              <p className="font-semibold truncate">
+            <div className="overflow-hidden min-w-0">
+              <p className="font-semibold text-sm truncate">
                 {session?.user
                   ?.name ||
                   "Usuario"}
               </p>
 
-              <p className="text-sm opacity-80 truncate">
+              <p className="text-xs opacity-80 truncate">
                 {session?.user
-                  ?.email ||
-                  ""}
+                  ?.email || ""}
               </p>
 
-              <p className="text-xs mt-1 bg-white/20 inline-block px-2 py-1 rounded-lg">
+              <p className="text-[10px] mt-1 bg-white/20 inline-block px-2 py-1 rounded-lg">
                 {session?.user
-                  ?.role ||
-                  ""}
+                  ?.role || ""}
               </p>
             </div>
           </div>
         </div>
 
         {/* MENU */}
-        <nav className="flex-1 overflow-y-auto p-4 space-y-2">
+        <nav className="flex-1 overflow-y-auto p-3 space-y-1">
           {menu.map((item) => {
             const Icon =
               item.icon;
@@ -172,9 +168,9 @@ export default function DashboardLayout({
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-green-600 transition"
+                className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-green-600 transition text-sm font-medium"
               >
-                <Icon size={20} />
+                <Icon size={18} />
 
                 <span>
                   {item.name}
@@ -190,9 +186,9 @@ export default function DashboardLayout({
             onClick={
               handleLogout
             }
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-red-600 hover:bg-red-700 transition"
+            className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-red-600 hover:bg-red-700 transition text-sm font-medium"
           >
-            <LogOut size={20} />
+            <LogOut size={18} />
 
             <span>
               Salir del sistema
@@ -201,8 +197,8 @@ export default function DashboardLayout({
         </div>
 
         {/* FOOTER */}
-        <div className="px-6 py-4 border-t border-green-600 text-sm">
-          <p className="opacity-90">
+        <div className="px-5 py-4 border-t border-green-600 text-xs">
+          <p className="opacity-90 leading-relaxed">
             Desarrollado por{" "}
             <a
               href="mailto:wiledwardmunoz@gmail.com"
@@ -215,40 +211,40 @@ export default function DashboardLayout({
       </aside>
 
       {/* RIGHT SIDE */}
-      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+      <div className="flex-1 flex flex-col h-screen overflow-hidden min-w-0">
         {/* TOPBAR */}
-        <header className="bg-white shadow-sm px-4 lg:px-6 py-4 flex items-center justify-between flex-shrink-0">
+        <header className="bg-white border-b border-gray-200 px-4 lg:px-6 py-3 flex items-center justify-between flex-shrink-0">
           {/* LEFT */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 min-w-0">
             <button
               className="lg:hidden"
               onClick={() =>
                 setOpen(true)
               }
             >
-              <Menu size={28} />
+              <Menu size={24} />
             </button>
 
-            <div>
-              <h2 className="text-xl font-bold text-gray-800">
+            <div className="min-w-0">
+              <h2 className="text-lg lg:text-xl font-bold text-gray-800 truncate">
                 Dashboard
               </h2>
 
-              <p className="text-sm text-gray-500 hidden sm:block">
-                Sistema de gestión
+              <p className="text-xs text-gray-500 hidden sm:block truncate">
+                Sistema empresarial de gestión
               </p>
             </div>
           </div>
 
-          {/* USER RIGHT */}
-          <div className="flex items-center gap-3 bg-gray-100 px-4 py-2 rounded-xl max-w-[260px]">
+          {/* USER INFO */}
+          <div className="flex items-center gap-3 bg-gray-100 px-3 py-2 rounded-xl max-w-[240px] lg:max-w-[320px] min-w-0 shrink-0">
             <UserCircle2
-              size={34}
-              className="text-green-700"
+              size={30}
+              className="text-green-700 shrink-0"
             />
 
-            <div className="overflow-hidden hidden sm:block">
-              <p className="font-semibold text-sm truncate">
+            <div className="overflow-hidden hidden sm:block min-w-0">
+              <p className="font-semibold text-sm truncate text-gray-800">
                 {session?.user
                   ?.name ||
                   "Usuario"}
@@ -256,26 +252,26 @@ export default function DashboardLayout({
 
               <p className="text-xs text-gray-500 truncate">
                 {session?.user
-                  ?.email ||
-                  ""}
+                  ?.email || ""}
               </p>
 
-              <p className="text-xs text-green-700 font-semibold">
+              <p className="text-[11px] text-green-700 font-semibold truncate">
                 {session?.user
-                  ?.role ||
-                  ""}
+                  ?.role || ""}
               </p>
             </div>
           </div>
         </header>
 
         {/* CONTENT */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
-          {children}
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 lg:p-6">
+          <div className="max-w-[1600px] mx-auto text-sm text-gray-700">
+            {children}
+          </div>
         </main>
 
         {/* MOBILE FOOTER */}
-        <footer className="bg-white border-t px-6 py-4 text-center text-sm text-gray-500 lg:hidden flex-shrink-0">
+        <footer className="bg-white border-t px-4 py-3 text-center text-xs text-gray-500 lg:hidden flex-shrink-0">
           Desarrollado por{" "}
           <a
             href="mailto:wiledwardmunoz@gmail.com"
