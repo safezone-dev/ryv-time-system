@@ -1,6 +1,15 @@
 import "./globals.css";
 
-import AuthProvider from "@/components/providers/session-provider";
+import type { Metadata } from "next";
+
+import SessionProviderWrapper from "@/components/providers/session-provider";
+
+export const metadata: Metadata = {
+  title: "RYV CRM",
+
+  description:
+    "RYV CRM Platform",
+};
 
 export default function RootLayout({
   children,
@@ -10,9 +19,9 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body>
-        <AuthProvider>
+        <SessionProviderWrapper>
           {children}
-        </AuthProvider>
+        </SessionProviderWrapper>
       </body>
     </html>
   );

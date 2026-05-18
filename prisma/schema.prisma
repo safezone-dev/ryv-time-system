@@ -15,102 +15,140 @@ enum Role {
 
 enum EntryStatus {
   ACTIVE
-  FINISHED
+  CLOSED
   APPROVED
 }
 
 model User {
-  id          String       @id @default(cuid())
+  id            String       @id @default(cuid())
 
-  name        String
-  email       String       @unique
-  password    String
+  name          String
 
-  role        Role         @default(COLLABORATOR)
+  email         String       @unique
 
-  active      Boolean      @default(true)
+  password      String
 
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @default(now()) @updatedAt
+  role          Role         @default(COLLABORATOR)
+
+  active        Boolean      @default(true)
+
+  createdAt     DateTime     @default(now())
+
+  updatedAt     DateTime     @updatedAt
 
   // RELACIONES
-  timeEntries TimeEntry[]
-  assignments Assignment[]
+  timeEntries   TimeEntry[]
 
-  // CLIENTES ASIGNADOS
-  clients     Client[]
+  assignments   Assignment[]
+
+  // CLIENTES DIRECTOS
+  clients       Client[]
 }
 
 model Client {
   id            String       @id @default(cuid())
 
   name          String
+
   contact       String?
+
   phone         String?
+
   email         String?
 
   advisor       String?
+
   executive     String?
 
   active        Boolean      @default(true)
 
   createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @default(now()) @updatedAt
+
+  updatedAt     DateTime     @updatedAt
 
   // ASIGNACION DIRECTA
   assignedToId  String?
+
   assignedTo    User? @relation(fields: [assignedToId], references: [id])
 
   // RELACIONES
   timeEntries   TimeEntry[]
+
   assignments   Assignment[]
 }
 
 model Assignment {
-  id          String    @id @default(cuid())
+  id            String       @id @default(cuid())
 
-  userId      String
-  clientId    String
+  userId        String
 
-  user        User      @relation(fields: [userId], references: [id])
-  client      Client    @relation(fields: [clientId], references: [id])
+  clientId      String
 
-  createdAt   DateTime  @default(now())
+  user          User @relation(fields: [userId], references: [id])
+
+  client        Client @relation(fields: [clientId], references: [id])
+
+  createdAt     DateTime @default(now())
 
   @@unique([userId, clientId])
 }
 
 model TimeEntry {
-  id          String       @id @default(cuid())
+  id              String       @id @default(cuid())
 
-  userId      String
-  clientId    String
+  // RELACIONES
+  userId          String
 
-  description String?
+  clientId        String
 
-  startTime   DateTime
-  endTime     DateTime?
+  user            User @relation(fields: [userId], references: [id])
 
-  duration    Int?
+  client          Client @relation(fields: [clientId], references: [id])
 
-  status      EntryStatus  @default(ACTIVE)
+  // ACTIVIDAD
+  description     String
 
-  createdAt   DateTime     @default(now())
+  closingNotes    String?
 
-  user        User         @relation(fields: [userId], references: [id])
-  client      Client       @relation(fields: [clientId], references: [id])
+  // TIEMPOS
+  startTime       DateTime
+
+  endTime         DateTime?
+
+  duration        Int?
+
+  // STATUS
+  status          EntryStatus @default(ACTIVE)
+
+  // CONTROL
+  createdAt       DateTime @default(now())
+
+  updatedAt       DateTime @updatedAt
+
+  // INDICES
+  @@index([userId])
+
+  @@index([clientId])
+
+  @@index([status])
+
+  @@index([startTime])
 }
 
 model ImportLog {
-  id            String    @id @default(cuid())
+  id              String       @id @default(cuid())
 
-  fileName      String
-  importedBy    String?
+  fileName        String
 
-  totalRows     Int       @default(0)
-  createdRows   Int       @default(0)
-  updatedRows   Int       @default(0)
-  skippedRows   Int       @default(0)
+  importedBy      String?
 
-  createdAt     DateTime  @default(now())
+  totalRows       Int          @default(0)
+
+  createdRows     Int          @default(0)
+
+  updatedRows     Int          @default(0)
+
+  skippedRows     Int          @default(0)
+
+  createdAt       DateTime     @default(now())
 }
