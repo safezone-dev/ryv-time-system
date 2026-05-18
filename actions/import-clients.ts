@@ -10,7 +10,7 @@ import { revalidatePath } from "next/cache";
 
 export async function importClients(
   formData: FormData
-) {
+): Promise<void> {
   try {
     const file = formData.get(
       "file"
@@ -22,10 +22,7 @@ export async function importClients(
       );
     }
 
-    // =========================
     // LEER ARCHIVO
-    // =========================
-
     const bytes =
       await file.arrayBuffer();
 
@@ -54,25 +51,14 @@ export async function importClients(
         }
       );
 
-    // =========================
-    // CONTADORES
-    // =========================
-
     let createdRows = 0;
 
     let updatedRows = 0;
 
     let skippedRows = 0;
 
-    // =========================
     // RECORRER FILAS
-    // =========================
-
     for (const row of data) {
-      // =========================
-      // NORMALIZAR DATOS
-      // =========================
-
       const name = String(
         row["CLIENTES"] || ""
       )
@@ -106,19 +92,13 @@ export async function importClients(
           ] || ""
         ).trim();
 
-      // =========================
-      // VALIDAR CLIENTE
-      // =========================
-
+      // VALIDAR
       if (!name) {
         skippedRows++;
         continue;
       }
 
-      // =========================
       // BUSCAR CLIENTE
-      // =========================
-
       let client =
         await prisma.client.findFirst(
           {
@@ -132,10 +112,7 @@ export async function importClients(
           }
         );
 
-      // =========================
-      // ACTUALIZAR CLIENTE
-      // =========================
-
+      // ACTUALIZAR
       if (client) {
         client =
           await prisma.client.update(
@@ -158,10 +135,7 @@ export async function importClients(
         updatedRows++;
       }
 
-      // =========================
-      // CREAR CLIENTE
-      // =========================
-
+      // CREAR
       else {
         client =
           await prisma.client.create(
@@ -183,12 +157,8 @@ export async function importClients(
         createdRows++;
       }
 
-      // =========================
       // EXECUTIVE
-      // =========================
-
       if (executiveName) {
-        // EMAIL NORMALIZADO
         const executiveEmail =
           executiveName
             .toLowerCase()
@@ -198,10 +168,7 @@ export async function importClients(
             ) +
           "@ryvcrm.com";
 
-        // =========================
         // BUSCAR EXECUTIVE
-        // =========================
-
         let executiveUser =
           await prisma.user.findFirst(
             {
@@ -229,10 +196,7 @@ export async function importClients(
             }
           );
 
-        // =========================
         // CREAR EXECUTIVE
-        // =========================
-
         if (!executiveUser) {
           const hashedPassword =
             await bcrypt.hash(
@@ -262,10 +226,7 @@ export async function importClients(
             );
         }
 
-        // =========================
         // VALIDAR ASSIGNMENT
-        // =========================
-
         const existingAssignment =
           await prisma.assignment.findFirst(
             {
@@ -279,10 +240,7 @@ export async function importClients(
             }
           );
 
-        // =========================
         // CREAR ASSIGNMENT
-        // =========================
-
         if (
           !existingAssignment
         ) {
@@ -301,10 +259,7 @@ export async function importClients(
       }
     }
 
-    // =========================
-    // LOG IMPORTACIÓN
-    // =========================
-
+    // LOG
     await prisma.importLog.create({
       data: {
         fileName: file.name,
@@ -319,10 +274,7 @@ export async function importClients(
       },
     });
 
-    // =========================
     // REVALIDAR
-    // =========================
-
     revalidatePath(
       "/dashboard"
     );
@@ -342,31 +294,11 @@ export async function importClients(
     revalidatePath(
       "/dashboard/assignments"
     );
-
-    return {
-      success: true,
-
-      totalRows: data.length,
-
-      createdRows,
-
-      updatedRows,
-
-      skippedRows,
-    };
   } catch (error) {
     console.error(error);
 
-    return {
-      success: false,
-
-      totalRows: 0,
-
-      createdRows: 0,
-
-      updatedRows: 0,
-
-      skippedRows: 0,
-    };
+    throw new Error(
+      "Error importando clientes"
+    );
   }
 }
