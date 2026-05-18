@@ -10,7 +10,7 @@ import { revalidatePath } from "next/cache";
 
 export async function createExecutiveActivity(
   formData: FormData
-) {
+): Promise<void> {
   try {
     const userId = String(
       formData.get("userId")
@@ -65,16 +65,10 @@ export async function createExecutiveActivity(
     revalidatePath(
       "/executive/dashboard"
     );
-
-    return {
-      success: true,
-    };
   } catch (error) {
     console.error(error);
 
-    return {
-      success: false,
-    };
+    throw error;
   }
 }
 
@@ -84,7 +78,7 @@ export async function createExecutiveActivity(
 
 export async function closeExecutiveActivity(
   formData: FormData
-) {
+): Promise<void> {
   try {
     const entryId = String(
       formData.get(
@@ -154,17 +148,15 @@ export async function closeExecutiveActivity(
     );
 
     revalidatePath(
-      "/executive/dashboard"
+      "/executive/history"
     );
 
-    return {
-      success: true,
-    };
+    revalidatePath(
+      "/executive/dashboard"
+    );
   } catch (error) {
     console.error(error);
 
-    return {
-      success: false,
-    };
+    throw error;
   }
 }
