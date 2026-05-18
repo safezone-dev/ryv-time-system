@@ -1,8 +1,10 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+
 import { useState } from "react";
+
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -35,14 +37,13 @@ export default function LoginPage() {
           {
             email,
             password,
+
             redirect: false,
           }
         );
 
-      // LOGIN ERROR
-      if (
-        result?.error
-      ) {
+      // ERROR LOGIN
+      if (result?.error) {
         setError(
           "Correo o contraseña incorrectos"
         );
@@ -58,13 +59,9 @@ export default function LoginPage() {
       );
 
       router.refresh();
-    } catch (error) {
-      console.error(
-        error
-      );
-
+    } catch (err) {
       setError(
-        "Ocurrió un error iniciando sesión"
+        "Error iniciando sesión"
       );
 
       setLoading(false);
@@ -73,20 +70,20 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex">
-      {/* LEFT SIDE */}
+      {/* LEFT */}
       <div className="hidden lg:flex lg:w-1/2 bg-green-600 items-center justify-center">
         <div className="text-white text-center px-10">
           <h1 className="text-5xl font-bold mb-6">
-            RYV Contadores
+            RYV CRM
           </h1>
 
           <p className="text-xl opacity-90">
-            Sistema de Control de Tiempos
+            Sistema de control de tiempos
           </p>
         </div>
       </div>
 
-      {/* RIGHT SIDE */}
+      {/* RIGHT */}
       <div className="flex flex-1 items-center justify-center bg-gray-100 px-6">
         <div className="w-full max-w-md bg-white p-10 rounded-2xl shadow-xl">
           <h2 className="text-3xl font-bold text-gray-800 mb-2">
@@ -96,6 +93,13 @@ export default function LoginPage() {
           <p className="text-gray-500 mb-8">
             Ingrese sus credenciales
           </p>
+
+          {/* ERROR */}
+          {error && (
+            <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded-xl mb-5 text-sm">
+              {error}
+            </div>
+          )}
 
           <form
             onSubmit={
@@ -131,9 +135,7 @@ export default function LoginPage() {
               <input
                 type="password"
                 required
-                value={
-                  password
-                }
+                value={password}
                 onChange={(e) =>
                   setPassword(
                     e.target.value
@@ -143,19 +145,10 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* ERROR */}
-            {error && (
-              <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded-xl text-sm">
-                {error}
-              </div>
-            )}
-
             {/* BUTTON */}
             <button
               type="submit"
-              disabled={
-                loading
-              }
+              disabled={loading}
               className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 transition text-white py-3 rounded-xl font-semibold"
             >
               {loading

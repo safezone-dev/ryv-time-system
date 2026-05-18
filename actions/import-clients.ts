@@ -1,7 +1,11 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+
 import * as XLSX from "xlsx";
+
+import bcrypt from "bcryptjs";
+
 import { revalidatePath } from "next/cache";
 
 export async function importClients(
@@ -17,6 +21,10 @@ export async function importClients(
         "Debe seleccionar un archivo"
       );
     }
+
+    // =========================
+    // LEER ARCHIVO
+    // =========================
 
     const bytes =
       await file.arrayBuffer();
@@ -46,12 +54,25 @@ export async function importClients(
         }
       );
 
+    // =========================
+    // CONTADORES
+    // =========================
+
     let createdRows = 0;
+
     let updatedRows = 0;
+
     let skippedRows = 0;
 
+    // =========================
+    // RECORRER FILAS
+    // =========================
+
     for (const row of data) {
-      // COLUMNAS REALES DEL EXCEL
+      // =========================
+      // NORMALIZAR DATOS
+      // =========================
+
       const name = String(
         row["CLIENTES"] || ""
       )
@@ -70,87 +91,245 @@ export async function importClients(
         row[
           "CORREO ELECTRONICO"
         ] || ""
-      ).trim();
+      )
+        .trim()
+        .toLowerCase();
 
       const advisor = String(
         row["Asesor (a)"] || ""
       ).trim();
 
-      const executive = String(
-        row["Ejecutivo Actual"] ||
-          ""
-      ).trim();
+      const executiveName =
+        String(
+          row[
+            "Ejecutivo Actual"
+          ] || ""
+        ).trim();
 
-      // VALIDAR NOMBRE
+      // =========================
+      // VALIDAR CLIENTE
+      // =========================
+
       if (!name) {
         skippedRows++;
         continue;
       }
 
-      // BUSCAR CLIENTE EXISTENTE
-      // NORMALIZANDO EL NOMBRE
-      const existingClient =
+      // =========================
+      // BUSCAR CLIENTE
+      // =========================
+
+      let client =
         await prisma.client.findFirst(
           {
             where: {
               name: {
                 equals: name,
-                mode: "insensitive",
+                mode:
+                  "insensitive",
               },
             },
           }
         );
 
-      // ACTUALIZAR
-      if (existingClient) {
-        await prisma.client.update(
-          {
-            where: {
-              id: existingClient.id,
-            },
+      // =========================
+      // ACTUALIZAR CLIENTE
+      // =========================
 
-            data: {
-              contact,
-              phone,
-              email,
-              advisor,
-              executive,
-            },
-          }
-        );
+      if (client) {
+        client =
+          await prisma.client.update(
+            {
+              where: {
+                id: client.id,
+              },
+
+              data: {
+                contact,
+                phone,
+                email,
+                advisor,
+                executive:
+                  executiveName,
+              },
+            }
+          );
 
         updatedRows++;
       }
 
-      // CREAR
+      // =========================
+      // CREAR CLIENTE
+      // =========================
+
       else {
-        await prisma.client.create(
-          {
-            data: {
-              name,
-              contact,
-              phone,
-              email,
-              advisor,
-              executive,
-            },
-          }
-        );
+        client =
+          await prisma.client.create(
+            {
+              data: {
+                name,
+                contact,
+                phone,
+                email,
+                advisor,
+                executive:
+                  executiveName,
+
+                active: true,
+              },
+            }
+          );
 
         createdRows++;
       }
+
+      // =========================
+      // EXECUTIVE
+      // =========================
+
+      if (executiveName) {
+        // EMAIL NORMALIZADO
+        const executiveEmail =
+          executiveName
+            .toLowerCase()
+            .replace(
+              /\s+/g,
+              "."
+            ) +
+          "@ryvcrm.com";
+
+        // =========================
+        // BUSCAR EXECUTIVE
+        // =========================
+
+        let executiveUser =
+          await prisma.user.findFirst(
+            {
+              where: {
+                OR: [
+                  {
+                    email:
+                      executiveEmail,
+                  },
+
+                  {
+                    name: {
+                      equals:
+                        executiveName,
+
+                      mode:
+                        "insensitive",
+                    },
+                  },
+                ],
+
+                role:
+                  "EXECUTIVE",
+              },
+            }
+          );
+
+        // =========================
+        // CREAR EXECUTIVE
+        // =========================
+
+        if (!executiveUser) {
+          const hashedPassword =
+            await bcrypt.hash(
+              "Ryv2025*",
+              10
+            );
+
+          executiveUser =
+            await prisma.user.create(
+              {
+                data: {
+                  name:
+                    executiveName,
+
+                  email:
+                    executiveEmail,
+
+                  password:
+                    hashedPassword,
+
+                  role:
+                    "EXECUTIVE",
+
+                  active: true,
+                },
+              }
+            );
+        }
+
+        // =========================
+        // VALIDAR ASSIGNMENT
+        // =========================
+
+        const existingAssignment =
+          await prisma.assignment.findFirst(
+            {
+              where: {
+                userId:
+                  executiveUser.id,
+
+                clientId:
+                  client.id,
+              },
+            }
+          );
+
+        // =========================
+        // CREAR ASSIGNMENT
+        // =========================
+
+        if (
+          !existingAssignment
+        ) {
+          await prisma.assignment.create(
+            {
+              data: {
+                userId:
+                  executiveUser.id,
+
+                clientId:
+                  client.id,
+              },
+            }
+          );
+        }
+      }
     }
 
-    // GUARDAR LOG
+    // =========================
+    // LOG IMPORTACIÓN
+    // =========================
+
     await prisma.importLog.create({
       data: {
         fileName: file.name,
+
         totalRows: data.length,
+
         createdRows,
+
         updatedRows,
+
         skippedRows,
       },
     });
+
+    // =========================
+    // REVALIDAR
+    // =========================
+
+    revalidatePath(
+      "/dashboard"
+    );
+
+    revalidatePath(
+      "/dashboard/users"
+    );
 
     revalidatePath(
       "/dashboard/clients"
@@ -160,11 +339,19 @@ export async function importClients(
       "/dashboard/imports"
     );
 
+    revalidatePath(
+      "/dashboard/assignments"
+    );
+
     return {
       success: true,
+
       totalRows: data.length,
+
       createdRows,
+
       updatedRows,
+
       skippedRows,
     };
   } catch (error) {
@@ -172,9 +359,13 @@ export async function importClients(
 
     return {
       success: false,
+
       totalRows: 0,
+
       createdRows: 0,
+
       updatedRows: 0,
+
       skippedRows: 0,
     };
   }

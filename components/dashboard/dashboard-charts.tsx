@@ -12,19 +12,27 @@ import {
   Cell,
 } from "recharts";
 
+const COLORS = [
+  "#16a34a",
+  "#2563eb",
+  "#f59e0b",
+  "#dc2626",
+  "#7c3aed",
+];
+
 export default function DashboardCharts({
   userData,
   clientData,
 }: any) {
   return (
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-      {/* USERS */}
-      <div className="bg-white rounded-2xl shadow p-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">
-          Horas por colaborador
+      {/* USER HOURS */}
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+        <h2 className="text-lg font-bold text-gray-800 mb-5">
+          Horas por usuario
         </h2>
 
-        <div className="h-80">
+        <div className="h-[320px]">
           <ResponsiveContainer
             width="100%"
             height="100%"
@@ -32,25 +40,36 @@ export default function DashboardCharts({
             <BarChart
               data={userData}
             >
-              <XAxis dataKey="name" />
+              <XAxis
+                dataKey="name"
+              />
 
               <YAxis />
 
               <Tooltip />
 
-              <Bar dataKey="hours" />
+              <Bar
+                dataKey="hours"
+                fill="#16a34a"
+                radius={[
+                  6,
+                  6,
+                  0,
+                  0,
+                ]}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      {/* CLIENTS */}
-      <div className="bg-white rounded-2xl shadow p-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">
+      {/* CLIENT HOURS */}
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+        <h2 className="text-lg font-bold text-gray-800 mb-5">
           Horas por cliente
         </h2>
 
-        <div className="h-80">
+        <div className="h-[320px]">
           <ResponsiveContainer
             width="100%"
             height="100%"
@@ -60,7 +79,7 @@ export default function DashboardCharts({
                 data={clientData}
                 dataKey="hours"
                 nameKey="name"
-                outerRadius={120}
+                outerRadius={110}
                 label
               >
                 {clientData.map(
@@ -69,7 +88,15 @@ export default function DashboardCharts({
                     index: number
                   ) => (
                     <Cell
-                      key={index}
+                      key={
+                        index
+                      }
+                      fill={
+                        COLORS[
+                          index %
+                            COLORS.length
+                        ]
+                      }
                     />
                   )
                 )}
