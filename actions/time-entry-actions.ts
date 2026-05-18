@@ -2,99 +2,173 @@
 
 import { prisma } from "@/lib/prisma";
 
-import { getServerSession } from "next-auth";
-
-import { authOptions } from "@/lib/auth";
-
 import { revalidatePath } from "next/cache";
+
+// =========================
+// CREAR ACTIVIDAD
+// =========================
 
 export async function createTimeEntry(
   formData: FormData
 ) {
-  const session =
-    await getServerSession(
-      authOptions
+  try {
+    const userId = String(
+      formData.get("userId")
     );
 
-  if (!session?.user?.id) {
-    throw new Error(
-      "No autorizado"
+    const clientId = String(
+      formData.get("clientId")
     );
+
+    const description =
+      String(
+        formData.get(
+          "description"
+        )
+      );
+
+    // VALIDACIONES
+    if (
+      !userId ||
+      !clientId ||
+      !description
+    ) {
+      throw new Error(
+        "Faltan datos"
+      );
+    }
+
+    // CREAR ACTIVIDAD
+    await prisma.timeEntry.create(
+      {
+        data: {
+          userId,
+
+          clientId,
+
+          description,
+
+          startTime:
+            new Date(),
+
+          status:
+            "ACTIVE",
+        },
+      }
+    );
+
+    // REFRESH
+    revalidatePath(
+      "/dashboard/time-entries"
+    );
+
+    revalidatePath(
+      "/executive/time-entries"
+    );
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    console.error(error);
+
+    return {
+      success: false,
+    };
   }
+}
 
-  const clientId = String(
-    formData.get("clientId")
-  );
+// =========================
+// CERRAR ACTIVIDAD
+// =========================
 
-  const description = String(
-    formData.get(
-      "description"
-    ) || ""
-  );
-
-  const date = String(
-    formData.get("date")
-  );
-
-  const startTimeString = String(
-    formData.get("startTime")
-  );
-
-  const endTimeString = String(
-    formData.get("endTime")
-  );
-
-  // FECHAS
-  const startTime =
-    new Date(
-      `${date}T${startTimeString}`
+export async function stopTimeEntry(
+  formData: FormData
+) {
+  try {
+    const entryId = String(
+      formData.get(
+        "entryId"
+      )
     );
 
-  const endTime =
-    new Date(
-      `${date}T${endTimeString}`
+    const closingNotes =
+      String(
+        formData.get(
+          "closingNotes"
+        ) || ""
+      );
+
+    // BUSCAR ACTIVIDAD
+    const entry =
+      await prisma.timeEntry.findUnique(
+        {
+          where: {
+            id: entryId,
+          },
+        }
+      );
+
+    if (!entry) {
+      throw new Error(
+        "Actividad no encontrada"
+      );
+    }
+
+    // FECHA FINAL
+    const endTime =
+      new Date();
+
+    // CALCULAR DURACION
+    const duration =
+      Math.floor(
+        (endTime.getTime() -
+          entry.startTime.getTime()) /
+          1000 /
+          60
+      );
+
+    // ACTUALIZAR
+    await prisma.timeEntry.update(
+      {
+        where: {
+          id: entryId,
+        },
+
+        data: {
+          endTime,
+
+          duration,
+
+          closingNotes,
+
+          status:
+            "CLOSED",
+        },
+      }
     );
 
-  // DURACION EN MINUTOS
-  const duration =
-    Math.floor(
-      (endTime.getTime() -
-        startTime.getTime()) /
-        1000 /
-        60
+    // REFRESH
+    revalidatePath(
+      "/dashboard/time-entries"
     );
 
-  // VALIDAR
-  if (duration <= 0) {
-    throw new Error(
-      "Hora salida inválida"
+    revalidatePath(
+      "/executive/time-entries"
     );
+
+    revalidatePath(
+      "/executive/history"
+    );
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    console.error(error);
+
+    return {
+      success: false,
+    };
   }
-
-  await prisma.timeEntry.create({
-    data: {
-      userId:
-        session.user.id,
-
-      clientId,
-
-      description,
-
-      startTime,
-
-      endTime,
-
-      duration,
-
-      status: "FINISHED",
-    },
-  });
-
-  revalidatePath(
-    "/dashboard/time-entries"
-  );
-
-  return {
-    success: true,
-  };
 }
