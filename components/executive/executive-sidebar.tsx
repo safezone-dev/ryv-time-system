@@ -16,9 +16,27 @@ import {
 
 import { usePathname } from "next/navigation";
 
-export default function ExecutiveSidebar() {
+// =========================
+// TYPES
+// =========================
+
+interface Props {
+  userName: string;
+
+  userEmail: string;
+}
+
+export default function ExecutiveSidebar({
+  userName,
+
+  userEmail,
+}: Props) {
   const pathname =
     usePathname();
+
+  // INITIAL
+  const initial =
+    userName.charAt(0);
 
   // MENU
   const menuItems = [
@@ -110,17 +128,21 @@ export default function ExecutiveSidebar() {
               font-bold
             "
           >
-            E
+            {initial}
           </div>
 
           {/* INFO */}
-          <div>
-            <h3 className="font-semibold">
-              Executive
+          <div className="min-w-0">
+            <h3 className="font-semibold truncate">
+              {userName}
             </h3>
 
-            <p className="text-blue-100 text-xs">
-              Panel ejecutivo
+            <p className="text-blue-100 text-xs truncate">
+              {userEmail}
+            </p>
+
+            <p className="text-blue-200 text-xs mt-1">
+              Executive
             </p>
           </div>
         </div>
