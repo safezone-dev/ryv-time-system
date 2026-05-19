@@ -154,6 +154,9 @@ export default async function ExecutiveHistoryPage() {
                 ).toLocaleDateString(
                   "es-CR",
                   {
+                    timeZone:
+                      "America/Costa_Rica",
+
                     year:
                       "numeric",
 
@@ -282,7 +285,11 @@ export default async function ExecutiveHistoryPage() {
                                     {new Date(
                                       entry.startTime
                                     ).toLocaleString(
-                                      "es-CR"
+                                      "es-CR",
+                                      {
+                                        timeZone:
+                                          "America/Costa_Rica",
+                                      }
                                     )}
                                   </td>
 
@@ -292,7 +299,11 @@ export default async function ExecutiveHistoryPage() {
                                       ? new Date(
                                           entry.endTime
                                         ).toLocaleString(
-                                          "es-CR"
+                                          "es-CR",
+                                          {
+                                            timeZone:
+                                              "America/Costa_Rica",
+                                          }
                                         )
                                       : "-"}
                                   </td>

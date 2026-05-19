@@ -1,5 +1,7 @@
 "use server";
 
+import { toZonedTime } from "date-fns-tz";
+
 import { prisma } from "@/lib/prisma";
 
 import { revalidatePath } from "next/cache";
@@ -48,8 +50,10 @@ export async function createExecutiveActivity(
 
           description,
 
-          startTime:
+          startTime: toZonedTime(
             new Date(),
+            "America/Costa_Rica"
+          ),
 
           status:
             "ACTIVE",
@@ -111,7 +115,10 @@ export async function closeExecutiveActivity(
 
     // FECHA FINAL
     const endTime =
-      new Date();
+  toZonedTime(
+    new Date(),
+    "America/Costa_Rica"
+  );
 
     // CALCULAR DURACION
     const duration =

@@ -266,7 +266,11 @@ export default async function ExecutiveTimeEntriesPage() {
                       {new Date(
                         entry.startTime
                       ).toLocaleString(
-                        "es-CR"
+                        "es-CR",
+                        {
+                          timeZone:
+                            "America/Costa_Rica",
+                        }
                       )}
                     </td>
 
